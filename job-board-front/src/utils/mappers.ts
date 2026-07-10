@@ -9,9 +9,13 @@ export interface BackendJob {
   description: string;
   location?: string | null;
   salary?: string | null;
+  salary_min?: number | null;
+  salary_max?: number | null;
   type?: string | null;
   employer_id?: string;
   created_at?: string;
+  required_skills?: string[] | null;
+  perks?: string[] | null;
 }
 
 function parseSalaryRange(salary?: string | null): { min: number; max: number; display: string } {
@@ -78,22 +82,28 @@ export function mapBackendJob(
   const location = job.location || 'Remote';
   const type = normalizeJobType(job.type);
 
+  const salaryMin = job.salary_min ?? min;
+  const salaryMax = job.salary_max ?? max;
+  const salaryDisplay = salaryMin && salaryMax
+    ? `$${(salaryMin / 1000).toFixed(0)}k - $${(salaryMax / 1000).toFixed(0)}k`
+    : display;
+
   return {
     id: job.id,
     title: job.title,
     company: options.company || 'Hiring Company',
     logoUrl: DEFAULT_LOGO,
     location,
-    salary: display,
+    salary: salaryDisplay,
     type,
-    experience: max >= 180000 ? 'Director / Executive' : max >= 80000 ? 'Mid-Senior' : 'Entry Level',
-    salaryMin: min,
-    salaryMax: max,
+    experience: salaryMax >= 180000 ? 'Director / Executive' : salaryMax >= 80000 ? 'Mid-Senior' : 'Entry Level',
+    salaryMin,
+    salaryMax,
     isRemote: type === 'Remote' || location.toLowerCase().includes('remote'),
     postedDaysAgo: daysAgo(job.created_at),
     description: job.description || '',
-    requirements: [],
-    benefits: [],
+    requirements: job.required_skills ?? [],
+    benefits: job.perks ?? [],
     saved: options.saved ?? false,
     applied: options.applied ?? false,
     isActive: true,

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { setCurrentUser, setCurrentView } from '../store/careerSlice';
+import { setCurrentUser, setCurrentView, setAppliedJobIds, setSavedJobIds } from '../store/careerSlice';
 import { login } from '../api/auth';
+import { getMyApplications } from '../api/applications';
+import { getSavedJobs } from '../api/savedJobs';
 import { Eye, EyeOff, ShieldAlert } from 'lucide-react';
 
 export default function SignIn() {
@@ -32,9 +34,26 @@ export default function SignIn() {
         })
       );
 
-      dispatch(
-        setCurrentView(user.role === 'employer' ? 'employer-jobs' : 'jobs')
-      );
+      if (user.role === 'seeker') {
+        try {
+          const [appsRes, savedRes] = await Promise.all([
+            getMyApplications(),
+            getSavedJobs(),
+          ]);
+          const appliedIds = (appsRes.data.applications ?? []).map(
+            (a: { jobs?: { id: string } | null }) => a.jobs?.id
+          ).filter(Boolean);
+          const savedIds = (savedRes.data.savedJobs ?? []).map(
+            (s: { jobs?: { id: string } | null }) => s.jobs?.id
+          ).filter(Boolean);
+          dispatch(setAppliedJobIds(appliedIds));
+          dispatch(setSavedJobIds(savedIds));
+        } catch {
+          // non-critical, local state will be used
+        }
+      }
+
+      dispatch(setCurrentView(user.role === 'employer' ? 'employer-jobs' : 'jobs'));
     } catch {
       setErrorMsg('Invalid email or password');
     } finally {

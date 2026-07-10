@@ -50,8 +50,14 @@ export default function JobDetails() {
       dispatch(markJobApplied(currentJob.id));
       setIsApplyOpen(false);
       setIsSuccessOpen(true);
-    } catch {
-      alert('Could not submit your application. Please try again.');
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || '';
+      if (msg.toLowerCase().includes('already applied')) {
+        dispatch(markJobApplied(currentJob.id));
+        setIsApplyOpen(false);
+      } else {
+        alert('Could not submit your application. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -64,17 +70,17 @@ export default function JobDetails() {
       return;
     }
     const isSaved = savedJobIds.includes(currentJob.id);
+    dispatch(toggleSaveJob(currentJob.id));
     try {
       if (isSaved) {
         await removeSavedJob(currentJob.id);
-        dispatch(setSavedJobIds(savedJobIds.filter((id) => id !== currentJob.id)));
       } else {
         await saveJob(currentJob.id);
-        dispatch(setSavedJobIds([...savedJobIds, currentJob.id]));
       }
-      dispatch(toggleSaveJob(currentJob.id));
-    } catch {
-      alert('Could not update saved job. Please try again.');
+    } catch (err: unknown) {
+      dispatch(toggleSaveJob(currentJob.id)); // revert on failure
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Unknown error';
+      alert(`Could not update saved job: ${msg}`);
     }
   }, [currentJob, currentUser, dispatch, savedJobIds]);
 

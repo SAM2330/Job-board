@@ -352,7 +352,13 @@ export default function EmployerHub() {
                               className="flex items-center gap-1 hover:underline cursor-pointer"
                               onClick={(e) => {
                                 e.preventDefault();
-                                alert(`Downloading ${app.applicantName}'s uploaded document: ${app.resumeUrl || 'resume.pdf'}`);
+                                if (app.resumeUrl) {
+                                  const a = document.createElement('a');
+                                  a.href = app.resumeUrl;
+                                  a.target = '_blank';
+                                  a.rel = 'noopener noreferrer';
+                                  a.click();
+                                }
                               }}
                             >
                               <FileText size={14} />

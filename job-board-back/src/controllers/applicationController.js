@@ -118,11 +118,19 @@ const uploadResume = async (req, res) => {
             return res.status(400).json({ message: "No file uploaded" });
         }
 
+        const allowedTypes = ["application/pdf"];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return res.status(400).json({ message: "Only PDF files are allowed" });
+        }
+
         const fileName = `${userId}-${Date.now()}.pdf`;
 
         const { data, error } = await supabase.storage
             .from("resumes")
-            .upload(fileName, file.buffer);
+            .upload(fileName, file.buffer, {
+                contentType: file.mimetype,
+                upsert: false
+            });
 
         if (error) {
             return res.status(500).json({ message: error.message });
@@ -164,7 +172,8 @@ const getMyApplications = async (req, res) => {
                     id,
                     title,
                     location,
-                    salary,
+                    salary_min,
+                    salary_max,
                     type
                 )
             `)

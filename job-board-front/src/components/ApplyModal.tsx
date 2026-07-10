@@ -128,7 +128,7 @@ export default function ApplyModal({ job, isOpen, onClose, onSubmit }: ApplyModa
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileChange}
-                accept=".pdf,.docx"
+                accept=".pdf"
                 className="hidden"
               />
               
@@ -145,12 +145,12 @@ export default function ApplyModal({ job, isOpen, onClose, onSubmit }: ApplyModa
                     <FileText size={14} />
                     {resumeName}
                   </p>
-                  <p className="text-xs text-outline mt-1">Click to replace files (PDF, DOCX up to 10MB)</p>
+                  <p className="text-xs text-outline mt-1">Click to replace (PDF up to 10MB)</p>
                 </div>
               ) : (
                 <div className="text-center">
                   <p className="text-body-md font-semibold text-on-surface">Click to upload or drag and drop</p>
-                  <p className="text-label-sm text-outline mt-1">PDF, DOCX (Max 10MB)</p>
+                  <p className="text-label-sm text-outline mt-1">PDF only (Max 10MB)</p>
                 </div>
               )}
             </div>

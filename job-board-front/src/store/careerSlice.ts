@@ -51,8 +51,8 @@ const initialState: CareerState = {
   selectedSalaryRange: '$120k - $180k',
   selectedExperience: 'Mid-Senior',
   isLoading: false,
-  appliedJobIds: [],
-  savedJobIds: [],
+  appliedJobIds: savedState.appliedJobIds || [],
+  savedJobIds: savedState.savedJobIds || [],
 };
 
 const saveToLocalStorage = (state: CareerState) => {
@@ -62,6 +62,8 @@ const saveToLocalStorage = (state: CareerState) => {
       currentView: state.currentView,
       selectedJobId: state.selectedJobId,
       selectedTypes: state.selectedTypes,
+      appliedJobIds: state.appliedJobIds,
+      savedJobIds: state.savedJobIds,
     });
     localStorage.setItem('careersync_state', serializedState);
   } catch {
@@ -173,6 +175,7 @@ export const careerSlice = createSlice({
           state.savedJobIds = state.savedJobIds.filter((id) => id !== jobId);
         }
       }
+      saveToLocalStorage(state);
     },
     markJobApplied: (state, action: PayloadAction<string>) => {
       const jobId = action.payload;
@@ -183,6 +186,7 @@ export const careerSlice = createSlice({
       if (!state.appliedJobIds.includes(jobId)) {
         state.appliedJobIds.push(jobId);
       }
+      saveToLocalStorage(state);
     },
     updateApplicantStatus: (
       state,

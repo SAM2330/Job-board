@@ -59,7 +59,8 @@ export default function JobsFeed() {
     } finally {
       dispatch(setLoading(false));
     }
-  }, [dispatch, searchQuery, searchLocation, selectedTypes, page, savedJobIds, appliedJobIds]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dispatch, searchQuery, searchLocation, selectedTypes, page]);
 
   useEffect(() => {
     fetchJobs();
@@ -96,17 +97,17 @@ export default function JobsFeed() {
       return;
     }
     const isSaved = savedJobIds.includes(jobId);
+    dispatch(toggleSaveJob(jobId));
     try {
       if (isSaved) {
         await removeSavedJob(jobId);
-        dispatch(setSavedJobIds(savedJobIds.filter((id) => id !== jobId)));
       } else {
         await saveJob(jobId);
-        dispatch(setSavedJobIds([...savedJobIds, jobId]));
       }
-      dispatch(toggleSaveJob(jobId));
-    } catch {
-      alert('Could not update saved job. Please try again.');
+    } catch (err: unknown) {
+      dispatch(toggleSaveJob(jobId)); // revert on failure
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Unknown error';
+      alert(`Could not update saved job: ${msg}`);
     }
   };
 
@@ -308,7 +309,7 @@ export default function JobsFeed() {
                           job.saved ? 'text-primary fill-primary' : 'text-outline hover:text-primary'
                         }`}
                       >
-                        <Bookmark size={20} />
+                        <Bookmark size={20} className={job.saved ? 'fill-primary' : ''} />
                       </button>
                     </div>
 

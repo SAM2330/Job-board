@@ -73,8 +73,12 @@ const getSavedJobs = async (req, res) => {
                     title,
                     description,
                     location,
-                    salary,
-                    type
+                    salary_min,
+                    salary_max,
+                    type,
+                    required_skills,
+                    perks,
+                    created_at
                 )
             `)
             .eq("user_id", userId)
