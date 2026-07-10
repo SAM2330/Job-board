@@ -17,21 +17,6 @@ export default function Header() {
     setMobileMenuOpen(false);
   };
 
-  const toggleRole = () => {
-    if (!currentUser) return;
-    const newRole = currentUser.role === 'seeker' ? 'employer' : 'seeker';
-    dispatch(
-      setCurrentUser({
-        ...currentUser,
-        role: newRole,
-        name: newRole === 'seeker' ? 'Alex Chen' : 'Sarah Chen (HR)',
-        image: newRole === 'seeker'
-          ? 'https://lh3.googleusercontent.com/aida-public/AB6AXuCghf7bmBYmwtfwtpGo6utr3Odxeft572zY-1gQ4ffsCGnUfQrDVH_YVo_egY3TsGcYWdkGjzU08uHE0zfyUVlyb2iEQAkmcGk7bbbUuk5vO4QnznUaqaQUS6nGT6000eCuJsw6FPWdi11WARbzM3Qs7fHOafNlO-96NkK1AuYV6hL4F9SZoh-mTiyjoU74rtJb6CNFbQBGH8IlWKKAHIAYCWPBVo4c0GymfgD8K-MhRWacCJBn9_5n'
-          : 'https://lh3.googleusercontent.com/aida-public/AB6AXuAJrEz16xrAjWWw2Yw33bZf9om4v2LHmGJ_syGJp2_YWEQ41ETH1f3MPR7nvzJhumF5tc5N2wed0eBrY3glhFqMZOJnjOzvnhYeBjH61ybo2Gv-uAfg9e_CCIVIexpmtIJiKd3hGfPN7yaWrvWrHAeyV4mYWCPCe9d3_IJ6LOgY7ZHCrFeSCHunXMeGbMOF9F0rP-NnDxZqV7tJjloQX9CzcaXdB2GPldhAGjhiZZ05D4_fjn3Mr2Oz'
-      })
-    );
-  };
-
   const handleLogout = () => {
     dispatch(setCurrentUser(null));
     dispatch(setCurrentView('signin'));
@@ -137,16 +122,6 @@ export default function Header() {
         <div className="flex items-center gap-4">
           {currentUser ? (
             <>
-              {/* Role Quick-Switch Pill */}
-              <button
-                onClick={toggleRole}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-secondary-container text-on-secondary-container hover:bg-secondary-container/80 transition-all rounded-full text-xs font-semibold cursor-pointer border border-primary/10"
-                title="Switch role to preview seeker/employer screens"
-              >
-                <User size={12} />
-                <span>Role: {currentUser.role === 'seeker' ? 'Job Seeker' : 'Employer'}</span>
-              </button>
-
               {/* Notifications bell */}
               <button
                 onClick={() => navigateTo('notifications')}
@@ -162,8 +137,14 @@ export default function Header() {
 
               {/* Profile Avatar / logout */}
               <div className="flex items-center gap-3 pl-2 border-l border-outline-variant">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant">
-                  <img src={currentUser.image} alt={currentUser.name} className="w-full h-full object-cover" />
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant flex items-center justify-center">
+                  {currentUser.image ? (
+                    <img src={currentUser.image} alt={currentUser.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center font-bold text-xs bg-primary/10 text-primary">
+                      {currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'US'}
+                    </div>
+                  )}
                 </div>
                 <span className="hidden md:block font-label-md text-label-md text-on-surface">{currentUser.name}</span>
                 <button
@@ -278,18 +259,8 @@ export default function Header() {
             </>
           )}
 
-          {/* Quick switch inside mobile menu */}
+          {/* Sign Out inside mobile menu */}
           <div className="border-t border-outline-variant pt-2 mt-2 flex flex-col gap-2">
-            <button
-              onClick={() => {
-                toggleRole();
-                setMobileMenuOpen(false);
-              }}
-              className="flex items-center justify-between px-4 py-2.5 bg-surface-container-low hover:bg-surface-container rounded-lg text-xs font-semibold"
-            >
-              <span>Current Role: {currentUser.role === 'seeker' ? 'Job Seeker' : 'Employer'}</span>
-              <span className="text-primary underline">Switch</span>
-            </button>
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 px-4 py-3 text-error hover:bg-error-container/20 rounded-lg text-left font-semibold"

@@ -24,7 +24,7 @@ import {
 
 export default function EmployerHub() {
   const dispatch = useDispatch();
-  const { applicants, jobs, selectedJobId } = useSelector((state: RootState) => state.career);
+  const { applicants, jobs, selectedJobId, currentUser } = useSelector((state: RootState) => state.career);
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'name'>('newest');
   const [selectedJobFilter, setSelectedJobFilter] = useState<string | 'all'>(selectedJobId || 'all');
@@ -191,12 +191,21 @@ export default function EmployerHub() {
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
-              <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJrEz16xrAjWWw2Yw33bZf9om4v2LHmGJ_syGJp2_YWEQ41ETH1f3MPR7nvzJhumF5tc5N2wed0eBrY3glhFqMZOJnjOzvnhYeBjH61ybo2Gv-uAfg9e_CCIVIexpmtIJiKd3hGfPN7yaWrvWrHAeyV4mYWCPCe9d3_IJ6LOgY7ZHCrFeSCHunXMeGbMOF9F0rP-NnDxZqV7tJjloQX9CzcaXdB2GPldhAGjhiZZ05D4_fjn3Mr2Oz"
-                alt="HR User"
-                className="w-full h-full object-cover"
-              />
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-on-surface-variant hidden sm:inline">{currentUser?.name}</span>
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-outline-variant bg-surface-container">
+                {currentUser?.image ? (
+                  <img
+                    src={currentUser.image}
+                    alt={currentUser.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center font-bold text-sm bg-primary/10 text-primary">
+                    {currentUser?.name?.substring(0, 2).toUpperCase() || 'EM'}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </header>
@@ -343,7 +352,7 @@ export default function EmployerHub() {
                               className="flex items-center gap-1 hover:underline cursor-pointer"
                               onClick={(e) => {
                                 e.preventDefault();
-                                alert(`Downloading Alex's uploaded document: ${app.resumeUrl || 'resume.pdf'}`);
+                                alert(`Downloading ${app.applicantName}'s uploaded document: ${app.resumeUrl || 'resume.pdf'}`);
                               }}
                             >
                               <FileText size={14} />
