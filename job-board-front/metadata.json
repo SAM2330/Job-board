@@ -1,0 +1,6 @@
+{
+  "name": "CareerSync",
+  "description": "A modern platform for technology and design jobs, featuring search, saved jobs, dashboards, and role-based views for job seekers and employers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
