@@ -72,10 +72,10 @@ export default function JobsFeed() {
         selectedTypes.length === 0 || selectedTypes.includes(job.type);
 
       const matchesExperience =
-        selectedExperience === '' || job.experience === selectedExperience;
+        selectedExperience === 'All' || selectedExperience === '' || job.experience === selectedExperience;
 
       let matchesSalary = true;
-      if (selectedSalaryRange) {
+      if (selectedSalaryRange && selectedSalaryRange !== 'All') {
         if (selectedSalaryRange === '$50k - $80k') {
           matchesSalary = job.salaryMax <= 80000;
         } else if (selectedSalaryRange === '$80k - $120k') {
@@ -231,6 +231,7 @@ export default function JobsFeed() {
               onChange={(e) => dispatch(setSalaryRange(e.target.value))}
               className="w-full rounded-xl border border-outline-variant bg-white p-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all cursor-pointer"
             >
+              <option value="All">All Salaries</option>
               <option value="$50k - $80k">$50k - $80k</option>
               <option value="$80k - $120k">$80k - $120k</option>
               <option value="$120k - $180k">$120k - $180k</option>
@@ -244,7 +245,7 @@ export default function JobsFeed() {
               Experience Level
             </h3>
             <div className="space-y-2.5">
-              {['Entry Level', 'Mid-Senior', 'Director / Executive'].map((exp) => (
+              {['All', 'Entry Level', 'Mid-Senior', 'Director / Executive'].map((exp) => (
                 <label key={exp} className="flex items-center gap-3 group cursor-pointer">
                   <input
                     type="radio"

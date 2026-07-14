@@ -48,8 +48,8 @@ const initialState: CareerState = {
   searchQuery: '',
   searchLocation: '',
   selectedTypes: savedState.selectedTypes || [],
-  selectedSalaryRange: '$120k - $180k',
-  selectedExperience: 'Mid-Senior',
+  selectedSalaryRange: 'All',
+  selectedExperience: 'All',
   isLoading: false,
   appliedJobIds: savedState.appliedJobIds || [],
   savedJobIds: savedState.savedJobIds || [],
@@ -130,8 +130,8 @@ export const careerSlice = createSlice({
     },
     clearFilters: (state) => {
       state.selectedTypes = [];
-      state.selectedSalaryRange = '$5k - $8k';
-      state.selectedExperience = 'Entry Level';
+      state.selectedSalaryRange = 'All';
+      state.selectedExperience = 'All';
       state.searchQuery = '';
       state.searchLocation = '';
       saveToLocalStorage(state);
