@@ -21,6 +21,7 @@ import NotificationsView from './views/NotificationsView';
 import SavedJobsView from './views/SavedJobsView';
 import SignIn from './views/SignIn';
 import Register from './views/Register';
+import ProfileView from './views/ProfileView';
 
 function AppContent() {
   const { currentView } = useSelector((state: RootState) => state.career);
@@ -53,6 +54,7 @@ function AppContent() {
         {currentView === 'employer-jobs' && <EmployerJobs />}
         {currentView === 'signin' && <SignIn />}
         {currentView === 'register' && <Register />}
+        {currentView === 'profile' && <ProfileView />}
       </div>
 
       {/* Global Footer */}

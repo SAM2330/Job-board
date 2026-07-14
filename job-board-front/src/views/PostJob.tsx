@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setCurrentView, setSelectedJobId } from '../store/careerSlice';
-import { createJob } from '../api/jobs';
+import { createJob, uploadCompanyLogo } from '../api/jobs';
 import {
   Briefcase,
   Users,
@@ -25,6 +25,9 @@ export default function PostJob() {
 
   // Form states
   const [title, setTitle] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [companyLogo, setCompanyLogo] = useState('');
+  const [logoUploading, setLogoUploading] = useState(false);
   const [type, setType] = useState<'Full-time' | 'Part-time' | 'Contract' | 'Remote' | 'Internship'>('Full-time');
   const [location, setLocation] = useState('');
   const [salaryMin, setSalaryMin] = useState(120000);
@@ -63,8 +66,8 @@ export default function PostJob() {
   };
 
   const handlePublish = async () => {
-    if (!title || !location || !description) {
-      alert('Please fill out the Job Title, Location, and Description to publish.');
+    if (!title || !location || !description || !companyName) {
+      alert('Please fill out the Job Title, Company Name, Location, and Description to publish.');
       return;
     }
 
@@ -78,12 +81,14 @@ export default function PostJob() {
         salaryMax,
         requiredSkills: skills,
         perks,
+        companyName,
+        companyLogo: companyLogo || undefined,
       });
 
       alert('Success! Your job posting was successfully published.');
       dispatch(setCurrentView('employer-jobs'));
-    } catch {
-      alert('Could not publish this job. Please make sure you are signed in as an employer.');
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || 'Could not publish this job.');
     }
   };
 
@@ -206,6 +211,62 @@ export default function PostJob() {
                     placeholder="e.g. Senior Product Designer"
                     className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-body-md text-on-surface"
                   />
+                </div>
+
+                {/* Company Name */}
+                <div>
+                  <label className="block text-label-sm text-secondary mb-2 font-semibold">Company Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="e.g. Acme Corp"
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all font-body-md text-on-surface"
+                  />
+                </div>
+
+                {/* Company Logo Upload */}
+                <div>
+                  <label className="block text-label-sm text-secondary mb-2 font-semibold">Company Logo <span className="text-outline font-normal">(optional)</span></label>
+                  <div className="flex items-center gap-4">
+                    {companyLogo ? (
+                      <img src={companyLogo} alt="logo preview" className="w-12 h-12 rounded-xl object-cover border border-outline-variant shrink-0" />
+                    ) : (
+                      <div className="w-12 h-12 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-center text-outline shrink-0">
+                        <Plus size={20} />
+                      </div>
+                    )}
+                    <label className="flex-1 cursor-pointer">
+                      <div className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-4 py-3 text-sm text-outline hover:border-primary transition-all text-center">
+                        {logoUploading ? 'Uploading...' : companyLogo ? 'Change image' : 'Choose image'}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/gif"
+                        className="hidden"
+                        disabled={logoUploading}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setLogoUploading(true);
+                          try {
+                            const res = await uploadCompanyLogo(file);
+                            setCompanyLogo(res.data.url);
+                          } catch {
+                            alert('Failed to upload logo. Please try again.');
+                          } finally {
+                            setLogoUploading(false);
+                          }
+                        }}
+                      />
+                    </label>
+                    {companyLogo && (
+                      <button type="button" onClick={() => setCompanyLogo('')} className="text-outline hover:text-error transition-colors cursor-pointer">
+                        <X size={18} />
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Job Type */}

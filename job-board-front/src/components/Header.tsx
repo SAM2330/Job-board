@@ -137,16 +137,22 @@ export default function Header() {
 
               {/* Profile Avatar / logout */}
               <div className="flex items-center gap-3 pl-2 border-l border-outline-variant">
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant flex items-center justify-center">
-                  {currentUser.image ? (
-                    <img src={currentUser.image} alt={currentUser.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-xs bg-primary/10 text-primary">
-                      {currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'US'}
-                    </div>
-                  )}
-                </div>
-                <span className="hidden md:block font-label-md text-label-md text-on-surface">{currentUser.name}</span>
+                <button
+                  onClick={() => navigateTo('profile')}
+                  className="flex items-center gap-2 group hover:opacity-85 transition-all cursor-pointer"
+                  title="My Profile"
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden bg-surface-container-high border border-outline-variant flex items-center justify-center">
+                    {currentUser.profile_pic || currentUser.image ? (
+                      <img src={currentUser.profile_pic || currentUser.image} alt={currentUser.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-bold text-xs bg-primary/10 text-primary">
+                        {currentUser.name ? currentUser.name.substring(0, 2).toUpperCase() : 'US'}
+                      </div>
+                    )}
+                  </div>
+                  <span className="hidden md:block font-label-md text-label-md text-on-surface group-hover:text-primary transition-colors">{currentUser.name}</span>
+                </button>
                 <button
                   onClick={handleLogout}
                   className="p-1.5 text-on-surface-variant hover:text-error hover:bg-error-container/20 rounded-full transition-all cursor-pointer"
@@ -188,6 +194,15 @@ export default function Header() {
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && currentUser && (
         <div className="absolute top-16 left-0 w-full bg-surface-container-lowest border-b border-outline-variant shadow-md md:hidden flex flex-col p-4 gap-2 z-40">
+          <button
+            onClick={() => navigateTo('profile')}
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left ${
+              currentView === 'profile' ? 'bg-secondary-container text-primary font-bold' : 'text-on-surface-variant hover:bg-surface-container'
+            }`}
+          >
+            <User size={18} />
+            <span>My Profile</span>
+          </button>
           {currentUser.role === 'seeker' ? (
             <>
               <button

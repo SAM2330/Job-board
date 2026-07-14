@@ -292,7 +292,13 @@ export default function JobsFeed() {
                 >
                   {/* Company Logo Image */}
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-white border border-outline-variant shrink-0 flex items-center justify-center p-1">
-                    <img src={job.logoUrl} alt={job.company} className="w-full h-full object-contain" />
+                    {job.logoUrl ? (
+                      <img src={job.logoUrl} alt={job.company} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="font-bold text-primary text-lg">
+                        {job.company.substring(0, 2).toUpperCase()}
+                      </span>
+                    )}
                   </div>
 
                   {/* Content body */}

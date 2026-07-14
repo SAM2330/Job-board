@@ -11,6 +11,16 @@ interface CareerState {
     email: string;
     role: 'seeker' | 'employer';
     image?: string;
+    bio?: string;
+    profile_pic?: string;
+    skills?: string[];
+    education?: string;
+    experience_summary?: string;
+    resume_url?: string;
+    company_name?: string;
+    company_website?: string;
+    company_industry?: string;
+    company_size?: string;
   } | null;
   currentView: ViewType;
   selectedJobId: string | null;
@@ -83,6 +93,16 @@ export const careerSlice = createSlice({
         email: string;
         role: 'seeker' | 'employer';
         image?: string;
+        bio?: string;
+        profile_pic?: string;
+        skills?: string[];
+        education?: string;
+        experience_summary?: string;
+        resume_url?: string;
+        company_name?: string;
+        company_website?: string;
+        company_industry?: string;
+        company_size?: string;
       } | null>
     ) => {
       state.currentUser = action.payload;

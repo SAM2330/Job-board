@@ -16,6 +16,8 @@ export interface BackendJob {
   created_at?: string;
   required_skills?: string[] | null;
   perks?: string[] | null;
+  company_name?: string | null;
+  company_logo?: string | null;
 }
 
 function parseSalaryRange(salary?: string | null): { min: number; max: number; display: string } {
@@ -91,8 +93,8 @@ export function mapBackendJob(
   return {
     id: job.id,
     title: job.title,
-    company: options.company || 'Hiring Company',
-    logoUrl: DEFAULT_LOGO,
+    company: job.company_name || options.company || 'Unknown Company',
+    logoUrl: job.company_logo || '',
     location,
     salary: salaryDisplay,
     type,
@@ -107,7 +109,7 @@ export function mapBackendJob(
     saved: options.saved ?? false,
     applied: options.applied ?? false,
     isActive: true,
-    companyImage: DEFAULT_LOGO,
+    companyImage: job.company_logo || '',
     companyDescription: job.description?.slice(0, 200) || '',
   };
 }
@@ -146,7 +148,7 @@ export function mapEmployerApplicant(
     resume_url?: string;
     status: Application['status'];
     created_at?: string;
-    users?: { id: string; name: string; email: string } | null;
+    users?: { id: string; name: string; email: string; profile_pic?: string | null } | null;
   },
   jobId: string,
   jobTitle: string
@@ -161,7 +163,8 @@ export function mapEmployerApplicant(
     status: app.status || 'pending',
     applicantName: user?.name || 'Applicant',
     applicantEmail: user?.email || '',
-    applicantImage: DEFAULT_LOGO,
+    applicantImage: user?.profile_pic || '',
+    applicantUserId: user?.id,
     resumeUrl: app.resume_url,
     coverLetter: app.cover_letter,
   };

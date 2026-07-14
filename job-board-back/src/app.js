@@ -10,6 +10,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 
 const savedJobRoutes = require("./routes/savedJobRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 
 
@@ -31,5 +32,6 @@ app.use("/api/applications", applicationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/saved-jobs", savedJobRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api", profileRoutes);
 
 module.exports = app;

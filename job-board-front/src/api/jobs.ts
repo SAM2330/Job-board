@@ -25,6 +25,16 @@ export const createJob = (jobData: {
   salaryMax: number;
   requiredSkills: string[];
   perks: string[];
+  companyName: string;
+  companyLogo?: string;
 }) => {
   return api.post('/jobs', jobData);
+};
+
+export const uploadCompanyLogo = (file: File) => {
+  const formData = new FormData();
+  formData.append('company_logo', file);
+  return api.post('/jobs/upload-logo', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 };

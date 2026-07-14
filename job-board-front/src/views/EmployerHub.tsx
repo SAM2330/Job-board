@@ -4,22 +4,13 @@ import { RootState } from '../store';
 import { setApplicants, setCurrentView, setJobs, setSelectedJobId, updateApplicantStatus } from '../store/careerSlice';
 import { updateApplicationStatus } from '../api/applications';
 import { getEmployerJobs, getJobApplicants } from '../api/dashboard';
+import { getPublicProfile } from '../api/auth';
 import { mapBackendJob, mapEmployerApplicant } from '../utils/mappers';
+import { Application } from '../types';
 import {
-  Users,
-  Briefcase,
-  Settings,
-  HelpCircle,
-  LogOut,
-  Plus,
-  ArrowLeft,
-  ChevronDown,
-  Download,
-  TrendingUp,
-  FileText,
-  FileSpreadsheet,
-  Trash2,
-  CheckCircle,
+  Users, Briefcase, Settings, HelpCircle, LogOut, Plus, ArrowLeft,
+  ChevronDown, TrendingUp, FileText, FileSpreadsheet, CheckCircle, X,
+  Mail, GraduationCap, Briefcase as BriefcaseIcon, Link as LinkIcon,
 } from 'lucide-react';
 
 export default function EmployerHub() {
@@ -29,6 +20,25 @@ export default function EmployerHub() {
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest' | 'name'>('newest');
   const [selectedJobFilter, setSelectedJobFilter] = useState<string | 'all'>(selectedJobId || 'all');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] = useState<Application | null>(null);
+  const [seekerProfile, setSeekerProfile] = useState<any>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  const handleViewApplicant = async (app: Application) => {
+    setSelectedApplicant(app);
+    setSeekerProfile(null);
+    if (app.applicantUserId) {
+      setProfileLoading(true);
+      try {
+        const res = await getPublicProfile(app.applicantUserId);
+        setSeekerProfile(res.data.user);
+      } catch {
+        setSeekerProfile(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
     const loadEmployerApplicants = async () => {
@@ -306,12 +316,21 @@ export default function EmployerHub() {
                       <tr key={app.id} className="hover:bg-surface-container-low/20 transition-all duration-150">
                         {/* Avatar & User Details */}
                         <td className="px-6 py-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container overflow-hidden shrink-0 border border-outline-variant/35">
-                              <img src={app.applicantImage} alt={app.applicantName} className="w-full h-full object-cover" />
+                          <div
+                            className="flex items-center gap-4 cursor-pointer group"
+                            onClick={() => handleViewApplicant(app)}
+                          >
+                            <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-outline-variant/35 flex items-center justify-center bg-primary/10">
+                              {app.applicantImage ? (
+                                <img src={app.applicantImage} alt={app.applicantName} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-primary font-bold text-sm">
+                                  {app.applicantName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                                </span>
+                              )}
                             </div>
                             <div>
-                              <div className="font-label-md text-on-surface font-semibold">{app.applicantName}</div>
+                              <div className="font-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">{app.applicantName}</div>
                               <div className="font-body-sm text-outline text-xs">{app.applicantEmail}</div>
                             </div>
                           </div>
@@ -379,11 +398,12 @@ export default function EmployerHub() {
                           </div>
                         </td>
 
-                        {/* Row action vert */}
+                        {/* Row action */}
                         <td className="px-6 py-5 text-right">
                           <button
-                            onClick={() => alert(`Reviewing details for ${app.applicantName}`)}
-                            className="p-2 rounded-full hover:bg-surface-container text-outline hover:text-on-surface cursor-pointer transition-colors"
+                            onClick={() => handleViewApplicant(app)}
+                            className="p-2 rounded-full hover:bg-surface-container text-outline hover:text-primary cursor-pointer transition-colors"
+                            title="View Profile"
                           >
                             <CheckCircle size={18} />
                           </button>
@@ -455,6 +475,95 @@ export default function EmployerHub() {
           </section>
         </div>
       </main>
+
+      {/* Seeker Profile Modal */}
+      {selectedApplicant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl border border-outline-variant w-full max-w-lg max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+              <h2 className="font-bold text-on-surface text-lg">Applicant Profile</h2>
+              <button onClick={() => setSelectedApplicant(null)} className="p-2 rounded-full hover:bg-surface-container cursor-pointer text-on-surface-variant">
+                <X size={18} />
+              </button>
+            </div>
+
+            {profileLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="p-6 space-y-5">
+                {/* Avatar + name */}
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border border-outline-variant flex items-center justify-center bg-primary/10 shrink-0">
+                    {selectedApplicant.applicantImage ? (
+                      <img src={selectedApplicant.applicantImage} alt={selectedApplicant.applicantName} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-primary font-bold text-xl">
+                        {selectedApplicant.applicantName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-bold text-on-surface text-lg">{selectedApplicant.applicantName}</p>
+                    <p className="text-sm text-outline flex items-center gap-1"><Mail size={13} />{selectedApplicant.applicantEmail}</p>
+                  </div>
+                </div>
+
+                {seekerProfile?.bio && (
+                  <div>
+                    <p className="text-xs font-bold text-outline uppercase tracking-wider mb-1">About</p>
+                    <p className="text-sm text-on-surface-variant">{seekerProfile.bio}</p>
+                  </div>
+                )}
+
+                {seekerProfile?.skills?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-outline uppercase tracking-wider mb-2">Skills</p>
+                    <div className="flex flex-wrap gap-2">
+                      {seekerProfile.skills.map((s: string) => (
+                        <span key={s} className="px-3 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-full">{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {seekerProfile?.education && (
+                  <div className="flex items-start gap-2">
+                    <GraduationCap size={16} className="text-outline mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-outline uppercase tracking-wider">Education</p>
+                      <p className="text-sm text-on-surface">{seekerProfile.education}</p>
+                    </div>
+                  </div>
+                )}
+
+                {seekerProfile?.experience_summary && (
+                  <div className="flex items-start gap-2">
+                    <BriefcaseIcon size={16} className="text-outline mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-outline uppercase tracking-wider">Experience</p>
+                      <p className="text-sm text-on-surface-variant">{seekerProfile.experience_summary}</p>
+                    </div>
+                  </div>
+                )}
+
+                {seekerProfile?.resume_url && (
+                  <a href={seekerProfile.resume_url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-primary text-sm font-semibold hover:underline">
+                    <LinkIcon size={14} />
+                    Portfolio / Resume Link
+                  </a>
+                )}
+
+                {!seekerProfile && (
+                  <p className="text-sm text-on-surface-variant text-center py-4">This applicant hasn't filled out their profile yet.</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

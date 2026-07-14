@@ -31,6 +31,7 @@ export interface Application {
   applicantName: string;
   applicantEmail: string;
   applicantImage: string;
+  applicantUserId?: string;
   resumeUrl?: string;
   coverLetter?: string;
 }
@@ -57,7 +58,8 @@ export type ViewType =
   | 'employer-applicants'
   | 'employer-jobs'
   | 'signin'
-  | 'register';
+  | 'register'
+  | 'profile';
 
 export interface UserState {
   currentUser: {
@@ -66,6 +68,16 @@ export interface UserState {
     email: string;
     role: 'seeker' | 'employer';
     image?: string;
+    bio?: string;
+    profile_pic?: string;
+    skills?: string[];
+    education?: string;
+    experience_summary?: string;
+    resume_url?: string;
+    company_name?: string;
+    company_website?: string;
+    company_industry?: string;
+    company_size?: string;
   } | null;
   currentView: ViewType;
   selectedJobId: string | null;

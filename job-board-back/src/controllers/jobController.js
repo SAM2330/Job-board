@@ -1,4 +1,31 @@
 const supabase = require("../config/supabase");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
+
+const uploadCompanyLogo = async (req, res) => {
+    try {
+        const file = req.file;
+        if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+        const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+        if (!allowedTypes.includes(file.mimetype))
+            return res.status(400).json({ message: "Only JPEG, PNG, WEBP, or GIF images are allowed" });
+
+        const ext = file.mimetype.split("/")[1];
+        const fileName = `logo-${req.user.id}-${Date.now()}.${ext}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(fileName, file.buffer, { contentType: file.mimetype, upsert: true });
+
+        if (uploadError) return res.status(500).json({ message: uploadError.message });
+
+        const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(fileName);
+        res.json({ url: publicUrl });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
 
 const createJob = async (req, res) => {
     try {
@@ -17,12 +44,14 @@ const createJob = async (req, res) => {
              salaryMin,
              salaryMax,
              requiredSkills,
-             perks
+             perks,
+             companyName,
+             companyLogo
 } = req.body;
 
         // 2. validation
-        if (!title || !description) {
-            return res.status(400).json({ message: "Title and description required" });
+        if (!title || !description || !companyName) {
+            return res.status(400).json({ message: "Title, description and company name required" });
         }
 
         // 3. insert job
@@ -38,7 +67,9 @@ const createJob = async (req, res) => {
             salary_max: salaryMax,
             required_skills: requiredSkills || [],
             perks: perks || [],
-            employer_id: userId
+            employer_id: userId,
+            company_name: companyName,
+            company_logo: companyLogo || null
         }
     ])
     .select();
@@ -156,5 +187,7 @@ const getJobs = async (req, res) => {
 module.exports = {
     createJob,
     getJobs,
-    getJob
+    getJob,
+    uploadCompanyLogo,
+    upload: multer({ storage: multer.memoryStorage() })
 };

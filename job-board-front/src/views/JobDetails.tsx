@@ -5,8 +5,9 @@ import { markJobApplied, setCurrentView, setJobs, setSavedJobIds, setSelectedJob
 import { applyToJob, uploadResume } from '../api/applications';
 import { getJob } from '../api/jobs';
 import { removeSavedJob, saveJob } from '../api/savedJobs';
+import { getPublicProfile } from '../api/auth';
 import { mapBackendJob } from '../utils/mappers';
-import { MapPin, Calendar, Heart, ShieldCheck, CheckCircle2, Bookmark, ExternalLink, ChevronLeft } from 'lucide-react';
+import { MapPin, Calendar, ShieldCheck, CheckCircle2, Bookmark, ExternalLink, ChevronLeft, X, Mail, GraduationCap, Briefcase as BriefcaseIcon, Link as LinkIcon, Building2 } from 'lucide-react';
 import ApplyModal from '../components/ApplyModal';
 import SuccessModal from '../components/SuccessModal';
 
@@ -16,6 +17,28 @@ export default function JobDetails() {
   const [isApplyOpen, setIsApplyOpen] = useState(false);
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [employerProfile, setEmployerProfile] = useState<any>(null);
+  const [employerProfileOpen, setEmployerProfileOpen] = useState(false);
+  const [employerProfileLoading, setEmployerProfileLoading] = useState(false);
+
+  const handleViewEmployerProfile = async () => {
+    if (!currentJob) return;
+    setEmployerProfileOpen(true);
+    setEmployerProfileLoading(true);
+    try {
+      // employer_id is stored on the job — we need to pass it through the mapper
+      const res = await getJob(currentJob.id);
+      const employerId = res.data.employer_id;
+      if (employerId) {
+        const profileRes = await getPublicProfile(employerId);
+        setEmployerProfile(profileRes.data.user);
+      }
+    } catch {
+      setEmployerProfile(null);
+    } finally {
+      setEmployerProfileLoading(false);
+    }
+  };
 
   const currentJob = jobs.find((j) => j.id === selectedJobId) || null;
   const isEmployer = currentUser?.role === 'employer';
@@ -119,8 +142,14 @@ export default function JobDetails() {
           <div className="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-outline-variant sticky top-24">
             <div className="flex items-start gap-4 mb-6">
               <div className="w-16 h-16 rounded-xl bg-surface-container flex items-center justify-center border border-outline-variant overflow-hidden shrink-0 p-1">
-                <img src={currentJob.logoUrl} alt={currentJob.company} className="w-full h-full object-contain" />
-              </div>
+                    {currentJob.logoUrl ? (
+                      <img src={currentJob.logoUrl} alt={currentJob.company} className="w-full h-full object-contain" />
+                    ) : (
+                      <span className="font-bold text-primary text-xl">
+                        {currentJob.company.substring(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
               <div>
                 <h1 className="font-headline-sm text-headline-sm text-on-surface leading-tight tracking-tight">
                   {currentJob.title}
@@ -271,7 +300,7 @@ export default function JobDetails() {
               {currentJob.companyDescription || `${currentJob.company} is building the future of technology and enterprise design, supported by top-tier VCs and composed of distributed expert talent.`}
             </p>
 
-            <button className="text-primary font-label-md text-label-md hover:underline flex items-center gap-1 font-bold cursor-pointer">
+            <button onClick={handleViewEmployerProfile} className="text-primary font-label-md text-label-md hover:underline flex items-center gap-1 font-bold cursor-pointer">
               <span>View Profile</span>
               <ExternalLink size={14} />
             </button>
@@ -324,6 +353,82 @@ export default function JobDetails() {
           dispatch(setCurrentView('jobs'));
         }}
       />
+      {/* Employer Profile Modal */}
+      {employerProfileOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl border border-outline-variant w-full max-w-lg max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-outline-variant">
+              <h2 className="font-bold text-on-surface text-lg">Employer Profile</h2>
+              <button onClick={() => setEmployerProfileOpen(false)} className="p-2 rounded-full hover:bg-surface-container cursor-pointer text-on-surface-variant">
+                <X size={18} />
+              </button>
+            </div>
+
+            {employerProfileLoading ? (
+              <div className="flex items-center justify-center py-16">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : employerProfile ? (
+              <div className="p-6 space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border border-outline-variant flex items-center justify-center bg-primary/10 shrink-0">
+                    {employerProfile.profile_pic ? (
+                      <img src={employerProfile.profile_pic} alt={employerProfile.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-primary font-bold text-xl">
+                        {employerProfile.name?.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <p className="font-bold text-on-surface text-lg">{employerProfile.name}</p>
+                    {employerProfile.company_name && (
+                      <p className="text-sm text-primary font-semibold flex items-center gap-1"><Building2 size={13} />{employerProfile.company_name}</p>
+                    )}
+                  </div>
+                </div>
+
+                {employerProfile.bio && (
+                  <div>
+                    <p className="text-xs font-bold text-outline uppercase tracking-wider mb-1">About</p>
+                    <p className="text-sm text-on-surface-variant">{employerProfile.bio}</p>
+                  </div>
+                )}
+
+                {employerProfile.company_industry && (
+                  <div className="flex items-start gap-2">
+                    <BriefcaseIcon size={16} className="text-outline mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-outline uppercase tracking-wider">Industry</p>
+                      <p className="text-sm text-on-surface">{employerProfile.company_industry}</p>
+                    </div>
+                  </div>
+                )}
+
+                {employerProfile.company_size && (
+                  <div className="flex items-start gap-2">
+                    <GraduationCap size={16} className="text-outline mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs font-bold text-outline uppercase tracking-wider">Company Size</p>
+                      <p className="text-sm text-on-surface">{employerProfile.company_size}</p>
+                    </div>
+                  </div>
+                )}
+
+                {employerProfile.company_website && (
+                  <a href={employerProfile.company_website} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-primary text-sm font-semibold hover:underline">
+                    <LinkIcon size={14} />
+                    {employerProfile.company_website}
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-on-surface-variant text-center py-8">This employer hasn't filled out their profile yet.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

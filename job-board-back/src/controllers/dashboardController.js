@@ -135,7 +135,8 @@ const getJobApplicants = async (req, res) => {
     users (
         id,
         name,
-        email
+        email,
+        profile_pic
     )
 `)
             .eq("job_id", jobId)
