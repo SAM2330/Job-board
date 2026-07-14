@@ -10,6 +10,20 @@ import { CheckCircle2, AlertCircle, Clock, XCircle, ChevronRight, HelpCircle, Bo
 export default function SeekerDashboard() {
   const dispatch = useDispatch();
   const { applicants, currentUser, jobs, appliedJobIds } = useSelector((state: RootState) => state.career);
+
+  const profileFields = currentUser ? [
+    !!currentUser.name,
+    !!(currentUser.profile_pic || currentUser.image),
+    !!currentUser.bio,
+    !!(currentUser.skills && currentUser.skills.length > 0),
+    !!currentUser.education,
+    !!currentUser.experience_summary,
+    !!currentUser.resume_url,
+  ] : [];
+  const profilePct = profileFields.length
+    ? Math.round((profileFields.filter(Boolean).length / profileFields.length) * 100)
+    : 0;
+  const profileLabel = profilePct >= 100 ? 'Complete' : profilePct >= 60 ? 'Intermediate' : 'Beginner';
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -217,23 +231,26 @@ export default function SeekerDashboard() {
               <div className="flex mb-2 items-center justify-between">
                 <div>
                   <span className="text-xs font-bold inline-block py-1 px-2.5 uppercase rounded-full text-primary bg-primary/10">
-                    Intermediate
+                    {profileLabel}
                   </span>
                 </div>
                 <div className="text-right">
-                  <span className="text-sm font-bold text-primary">75%</span>
+                  <span className="text-sm font-bold text-primary">{profilePct}%</span>
                 </div>
               </div>
               <div className="overflow-hidden h-2.5 mb-4 text-xs flex rounded-full bg-surface-container">
-                <div className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500" style={{ width: '75%' }} />
+                <div className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all duration-500" style={{ width: `${profilePct}%` }} />
               </div>
             </div>
             <p className="font-body-sm text-on-surface-variant text-sm leading-normal mb-4">
               Complete your portfolio and add a professional resume to increase visibility to top recruiters by{' '}
               <span className="font-bold text-on-surface">3x</span>.
             </p>
-            <button className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary/95 transition-all active:scale-95 cursor-pointer font-semibold shadow-sm text-center">
-              Finish Profile
+            <button
+              onClick={() => dispatch(setCurrentView('profile'))}
+              className="w-full py-3 px-4 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary/95 transition-all active:scale-95 cursor-pointer font-semibold shadow-sm text-center"
+            >
+              {profilePct >= 100 ? 'View Profile' : 'Finish Profile'}
             </button>
           </section>
 
