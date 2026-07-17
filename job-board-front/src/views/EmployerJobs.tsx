@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { setApplicants, setCurrentView, setJobs, setSelectedJobId } from '../store/careerSlice';
 import { getEmployerJobs, getJobApplicants } from '../api/dashboard';
+import { updateJobStatus } from '../api/jobs';
 import { mapBackendJob, mapEmployerApplicant } from '../utils/mappers';
 import {
   Briefcase,
@@ -24,6 +25,21 @@ export default function EmployerJobs() {
   const dispatch = useDispatch();
   const { jobs, applicants } = useSelector((state: RootState) => state.career);
   const [isLoading, setIsLoading] = useState(false);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  const handleToggleStatus = async (jobId: string, currentActive: boolean) => {
+    setTogglingId(jobId);
+    // optimistic update
+    dispatch(setJobs(jobs.map(j => j.id === jobId ? { ...j, isActive: !currentActive } : j)));
+    try {
+      await updateJobStatus(jobId, !currentActive);
+    } catch {
+      // revert on failure
+      dispatch(setJobs(jobs.map(j => j.id === jobId ? { ...j, isActive: currentActive } : j)));
+    } finally {
+      setTogglingId(null);
+    }
+  };
 
   useEffect(() => {
     const loadEmployerDashboard = async () => {
@@ -230,19 +246,25 @@ export default function EmployerJobs() {
                               {job.title}
                             </h3>
                             {job.isActive !== false ? (
-                              <span
-                                className="bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1"
+                              <button
+                                onClick={() => handleToggleStatus(job.id, true)}
+                                disabled={togglingId === job.id}
+                                title="Click to deactivate"
+                                className="bg-emerald-50 text-emerald-700 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Active
-                              </span>
+                              </button>
                             ) : (
-                              <span
-                                className="bg-slate-100 text-slate-600 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-slate-300 flex items-center gap-1"
+                              <button
+                                onClick={() => handleToggleStatus(job.id, false)}
+                                disabled={togglingId === job.id}
+                                title="Click to activate"
+                                className="bg-slate-100 text-slate-600 text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-slate-300 flex items-center gap-1 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition-colors cursor-pointer disabled:opacity-50"
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
                                 Inactive
-                              </span>
+                              </button>
                             )}
                           </div>
                           <div className="flex flex-wrap gap-x-4 gap-y-1 text-slate-500 text-xs font-medium">
