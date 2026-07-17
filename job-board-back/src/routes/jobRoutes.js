@@ -7,6 +7,7 @@ const {
     getJobs,
     getJob,
     uploadCompanyLogo,
+    updateJobStatus,
     upload
 } = require("../controllers/jobController");
 
@@ -17,5 +18,6 @@ router.get("/:id", getJob);
 // protected
 router.post("/", authMiddleware, createJob);
 router.post("/upload-logo", authMiddleware, upload.single("company_logo"), uploadCompanyLogo);
+router.patch("/:id/status", authMiddleware, updateJobStatus);
 
 module.exports = router;

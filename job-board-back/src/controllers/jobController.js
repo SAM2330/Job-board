@@ -112,6 +112,7 @@ const getJob = async (req, res) => {
             .from("jobs")
             .select("*")
             .eq("id", id)
+            .eq("is_active", true)
             .single();
 
         if (error) {
@@ -142,7 +143,8 @@ const getJobs = async (req, res) => {
 
         let query = supabase
             .from("jobs")
-            .select("*", { count: "exact" });
+            .select("*", { count: "exact" })
+            .eq("is_active", true);
 
         // search
         if (search) {
@@ -184,10 +186,35 @@ const getJobs = async (req, res) => {
         });
     }
 };
+const updateJobStatus = async (req, res) => {
+    try {
+        const { role, id: userId } = req.user;
+        if (role !== "employer") return res.status(403).json({ message: "Only employers can update jobs" });
+
+        const { id } = req.params;
+        const { isActive } = req.body;
+
+        const { data, error } = await supabase
+            .from("jobs")
+            .update({ is_active: isActive })
+            .eq("id", id)
+            .eq("employer_id", userId)
+            .select()
+            .single();
+
+        if (error || !data) return res.status(404).json({ message: "Job not found or unauthorized" });
+
+        res.json({ message: "Job status updated", job: data });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
 module.exports = {
     createJob,
     getJobs,
     getJob,
     uploadCompanyLogo,
+    updateJobStatus,
     upload: multer({ storage: multer.memoryStorage() })
 };

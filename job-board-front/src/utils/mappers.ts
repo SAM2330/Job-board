@@ -18,6 +18,7 @@ export interface BackendJob {
   perks?: string[] | null;
   company_name?: string | null;
   company_logo?: string | null;
+  is_active?: boolean | null;
 }
 
 function parseSalaryRange(salary?: string | null): { min: number; max: number; display: string } {
@@ -108,7 +109,7 @@ export function mapBackendJob(
     benefits: job.perks ?? [],
     saved: options.saved ?? false,
     applied: options.applied ?? false,
-    isActive: true,
+    isActive: job.is_active !== false,
     companyImage: job.company_logo || '',
     companyDescription: job.description?.slice(0, 200) || '',
   };

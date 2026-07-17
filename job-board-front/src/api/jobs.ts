@@ -31,6 +31,10 @@ export const createJob = (jobData: {
   return api.post('/jobs', jobData);
 };
 
+export const updateJobStatus = (jobId: string, isActive: boolean) => {
+  return api.patch(`/jobs/${jobId}/status`, { isActive });
+};
+
 export const uploadCompanyLogo = (file: File) => {
   const formData = new FormData();
   formData.append('company_logo', file);
