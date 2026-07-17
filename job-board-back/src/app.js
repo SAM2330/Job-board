@@ -22,7 +22,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const app = express();
 
 app.use(express.json());
-const cors = require("cors");
+
 
 app.use(cors({
   origin: [
