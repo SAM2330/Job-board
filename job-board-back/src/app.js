@@ -27,7 +27,7 @@ app.use(express.json());
 app.use(cors({
   origin: [
     "http://localhost:3000",
-    "job-board-kappa-three.vercel.app"
+    "https://job-board-kappa-three.vercel.app"
   ],
   credentials: true,
 }));
